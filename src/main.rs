@@ -47,39 +47,81 @@
 
 // src/main.rs
 
-mod config;
-mod core;
+
+
+
+
+
+
+
+
+
+// mod config;
+// mod core;
+// mod devices;
+// mod network;
+// mod platform;
+
+// use std::error::Error;
+// use core::runtime::RuntimeController;
+// use std::vec;
+// use devices::sensors::simulated_sensor::SimulatedSensor;
+// use network::console::ConsoleCommunicator;
+// use devices::actuators::dummy::DummyActuator;
+
+// #[tokio::main] // Necesario para usar Tokio
+// async fn main() -> Result<(), Box<dyn Error>> {
+//     println!("Iniciando Framework IoT...");
+    
+//     let sensor =  SimulatedSensor::new();
+
+//     let actuator = DummyActuator::new();
+
+//     let communicator = ConsoleCommunicator::new();
+
+//     let mut runtime = RuntimeController::new(
+//         vec![sensor],
+//         vec![actuator],
+//         communicator,
+//         5 // intervalo en segundos
+//     );
+
+//     println!("Runtime configurado. Iniciando ciclo de ejecución...");
+    
+
+//     runtime.run().await;
+//     Ok(())
+// }
+
+
+
+// src/main.rs
+mod drivers;
 mod devices;
-mod network;
-mod platform;
+mod core;
+use core::traits::sensor::Sensor;
+use devices::sensors::rain::RainSensor;
+use std::{thread, time::Duration};
 
-use std::error::Error;
-use core::runtime::RuntimeController;
-use std::vec;
-use devices::sensors::simulated_sensor::SimulatedSensor;
-use network::console::ConsoleCommunicator;
-use devices::actuators::dummy::DummyActuator;
+fn main() {
+    // Pin BCM que usaremos (ejemplo: GPIO17)
+    let pin_bcm: u8 = 17;
+    // Muchos módulos DO = LOW cuando mojado, así que active_low=true
+    let mut sensor = match RainSensor::new(pin_bcm, true) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("No se pudo inicializar RainSensor: {:?}", e);
+            return;
+        }
+    };
 
-#[tokio::main] // Necesario para usar Tokio
-async fn main() -> Result<(), Box<dyn Error>> {
-    println!("Iniciando Framework IoT...");
-    
-    let sensor =  SimulatedSensor::new();
-
-    let actuator = DummyActuator::new();
-
-    let communicator = ConsoleCommunicator::new();
-
-    let mut runtime = RuntimeController::new(
-        vec![sensor],
-        vec![actuator],
-        communicator,
-        5 // intervalo en segundos
-    );
-
-    println!("Runtime configurado. Iniciando ciclo de ejecución...");
-    
-
-    runtime.run().await;
-    Ok(())
+    println!("Leyendo sensor de lluvia en GPIO{} (Ctrl+C para salir)...", pin_bcm);
+    loop {
+        match sensor.read() {
+            Ok(true) => println!("ESTADO: MOJADO"),
+            Ok(false) => println!("ESTADO: SECO"),
+            Err(err) => eprintln!("Error lectura: {:?}", err),
+        }
+        thread::sleep(Duration::from_secs(1));
+    }
 }
