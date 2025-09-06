@@ -11,7 +11,7 @@ pub struct ConsoleCommunicator;
 
 impl Communicator for ConsoleCommunicator {
     /// El tipo de datos que se enviará al comunicador.
-    type Command = SensorData;
+    type Command = String;
     /// El tipo de datos que se recibirá como respuesta.
     type Response = ();
 

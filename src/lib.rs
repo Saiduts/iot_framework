@@ -42,6 +42,7 @@ pub mod network;
 // Soporte específico para la plataforma objetivo (Raspberry Pi, Jetson, etc.)
 pub mod platform;
 
+pub mod drivers;
 
 // Reexportar interfaces clave si se desea una API unificada
 pub use core::traits::{

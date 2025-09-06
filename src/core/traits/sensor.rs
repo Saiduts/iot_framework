@@ -20,4 +20,5 @@ pub trait Sensor {
 pub enum SensorError {
     /// Fallo en la lectura.
     ReadError(String),
+    ParseError(String),
 }

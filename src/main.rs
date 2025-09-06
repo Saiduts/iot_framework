@@ -99,29 +99,33 @@
 mod drivers;
 mod devices;
 mod core;
-use core::traits::sensor::Sensor;
-use devices::sensors::rain::RainSensor;
-use std::{thread, time::Duration};
+mod network;
 
-fn main() {
-    // Pin BCM que usaremos (ejemplo: GPIO17)
-    let pin_bcm: u8 = 17;
-    // Muchos módulos DO = LOW cuando mojado, así que active_low=true
-    let mut sensor = match RainSensor::new(pin_bcm, true) {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("No se pudo inicializar RainSensor: {:?}", e);
-            return;
-        }
-    };
+use crate::core::traits::sensor::Sensor;
+use crate::devices::sensors::rain::RainSensor;
+use crate::devices::sensors::temperature::Temperature;
+use crate::network::console::ConsoleCommunicator;
+use crate::core::runtime::RuntimeController;
+use crate::devices::actuators::dummy::DummyActuator;
 
-    println!("Leyendo sensor de lluvia en GPIO{} (Ctrl+C para salir)...", pin_bcm);
-    loop {
-        match sensor.read() {
-            Ok(true) => println!("ESTADO: MOJADO"),
-            Ok(false) => println!("ESTADO: SECO"),
-            Err(err) => eprintln!("Error lectura: {:?}", err),
-        }
-        thread::sleep(Duration::from_secs(1));
-    }
+#[tokio::main]
+async fn main() {
+   
+   //let rain_sensor = RainSensor::new(17, true).unwrap();
+   let temperature_sensor = Temperature::new("28-00000b0e60f1").unwrap();
+   let communicator = ConsoleCommunicator::new();
+
+
+   let mut runtime = RuntimeController::new(
+       vec![
+           // Box::new(rain_sensor),
+            temperature_sensor,
+        ],
+       Vec::<DummyActuator>::new(),
+       communicator,
+       5 // intervalo en segundos
+   );
+
+   println!("Runtime configurado. Iniciando ciclo de ejecución...");
+   runtime.run().await;
 }

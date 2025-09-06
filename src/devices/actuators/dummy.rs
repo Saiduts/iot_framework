@@ -10,7 +10,7 @@ impl DummyActuator {
 }
 
 impl Actuator for DummyActuator {
-    type Command = SensorData;
+    type Command = String;
 
     fn execute(&mut self, _command: Self::Command) -> Result<(), ActuatorError> {
         // No hacer nada - solo un placeholder
