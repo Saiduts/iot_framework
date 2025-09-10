@@ -1,5 +1,6 @@
 use crate::core::traits::actuator::{Actuator, ActuatorError};
-use crate::devices::sensors::simulated_sensor::SensorData;
+use crate::core::SensorOutput;
+use crate::Sensor;
 /// Actuador dummy que no hace nada
 pub struct DummyActuator;
 
@@ -10,7 +11,7 @@ impl DummyActuator {
 }
 
 impl Actuator for DummyActuator {
-    type Command = String;
+    type Command = SensorOutput;
 
     fn execute(&mut self, _command: Self::Command) -> Result<(), ActuatorError> {
         // No hacer nada - solo un placeholder

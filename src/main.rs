@@ -101,31 +101,35 @@ mod devices;
 mod core;
 mod network;
 
+use crate::core::SensorOutput;
 use crate::core::traits::sensor::Sensor;
-use crate::devices::sensors::rain::RainSensor;
+use crate::core::traits::communicator::Communicator;
+use crate::core::traits::actuator::Actuator;
+
 use crate::devices::sensors::temperature::Temperature;
+use crate::devices::sensors::rain::RainSensor; // si lo usas
+use crate::devices::actuators::dummy::DummyActuator;
+
 use crate::network::console::ConsoleCommunicator;
 use crate::core::runtime::RuntimeController;
-use crate::devices::actuators::dummy::DummyActuator;
 
 #[tokio::main]
 async fn main() {
-   
-   //let rain_sensor = RainSensor::new(17, true).unwrap();
-   let temperature_sensor = Temperature::new("28-00000b0e60f1").unwrap();
-   let communicator = ConsoleCommunicator::new();
+    // Sensores
+    let temp = Temperature::new("28-00000b0e60f1").unwrap();
+    let rain = RainSensor::new(17, true).unwrap();
 
+    let sensors: Vec<Box<dyn Sensor<Output = SensorOutput> + Send>> = vec![
+        Box::new(temp),
+        Box::new(rain),
+    ];
 
-   let mut runtime = RuntimeController::new(
-       vec![
-           // Box::new(rain_sensor),
-            temperature_sensor,
-        ],
-       Vec::<DummyActuator>::new(),
-       communicator,
-       5 // intervalo en segundos
-   );
+    // Comunicador
+    let communicator: Box<dyn Communicator<Command = SensorOutput, Response = ()> + Send> =
+        Box::new(ConsoleCommunicator::new());
 
-   println!("Runtime configurado. Iniciando ciclo de ejecución...");
-   runtime.run().await;
+    let mut runtime = RuntimeController::new(sensors, None, communicator, 5);
+
+    println!("Runtime configurado. Iniciando ciclo de ejecución...");
+    runtime.run().await;
 }

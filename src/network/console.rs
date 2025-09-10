@@ -1,5 +1,6 @@
 use crate::core::traits::communicator::{Communicator, CommunicatorError};
-use crate::devices::sensors::simulated_sensor::SensorData;
+use crate::core::SensorOutput;
+use crate::Sensor;
 
 /// `ConsoleCommunicator` es un comunicador simple que envía datos a la salida estándar (consola).
 ///
@@ -11,7 +12,7 @@ pub struct ConsoleCommunicator;
 
 impl Communicator for ConsoleCommunicator {
     /// El tipo de datos que se enviará al comunicador.
-    type Command = String;
+    type Command = SensorOutput;
     /// El tipo de datos que se recibirá como respuesta.
     type Response = ();
 
@@ -31,8 +32,7 @@ impl Communicator for ConsoleCommunicator {
     /// ```
     /// Envía datos del sensor a la consola con formato legible.
     fn send(&mut self, command: Self::Command) -> Result<Self::Response, CommunicatorError> {
-        println!("[CONSOLE] 🌡️  Temp: {:.2}°C | 💧 Humedad: {:.2}% | ⏰ Timestamp: {}", 
-                 command.temperature, command.humidity, command.timestamp);
+        println!("[CONSOLE] {:?}", command);
         Ok(())
     }
 
